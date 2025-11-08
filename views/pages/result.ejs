@@ -1,0 +1,238 @@
+<%- include('../partials/header') %>
+
+<style>
+  .apikey-input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    background: #2a2a3a;
+    color: var(--success);
+    font-family: monospace;
+    border: 1px solid #333;
+    min-width: 0;
+  }
+  .toggle-btn, .copy-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #aaa;
+    font-size: 1.1rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+  }
+  .toggle-btn:hover, .copy-btn:hover {
+    color: white;
+    background: rgba(255,255,255,0.1);
+  }
+  .snippet-container {
+    position: relative;
+    background: #1a1a25;
+    border-radius: 8px;
+    overflow: auto;
+    margin-top: 0.5rem;
+  }
+  .snippet-copy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.4);
+    border: none;
+    color: white;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .snippet-copy:hover {
+    background: rgba(255,255,255,0.2);
+  }
+  pre.snippet-content {
+    padding: 1rem;
+    margin: 0;
+    white-space: pre;
+    overflow-x: auto;
+    color: #d4d4d4;
+  }
+</style>
+
+<section style="padding: 2.5rem 0;">
+  <h2 style="text-align: center; margin-bottom: 2rem; color: var(--secondary);">
+    <i class="fas fa-terminal"></i> API Response
+  </h2>
+
+  <div style="max-width: 1000px; margin: 0 auto;">
+
+    <!-- Request -->
+    <div style="margin-bottom: 2rem; background: var(--card-bg); padding: 1.5rem; border-radius: 16px;">
+      <h3 style="margin-bottom: 1rem; color: var(--accent);">Request</h3>
+      <p><strong>URL:</strong> <code><%= request.url %></code></p>
+      <p><strong>Method:</strong> <code><%= request.method %></code></p>
+      
+      <div style="margin-top: 1.25rem;">
+        <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">API Key / Auth</label>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <input
+            type="text"
+            id="apiKeyInput"
+            value="<%= request.apikey %>"
+            readonly
+            class="apikey-input"
+            style="filter: blur(3px); opacity: 0.7;"
+          />
+          <button class="toggle-btn" id="toggleVisibility" title="Toggle visibility">
+            <i class="fas fa-eye-slash" id="eyeIcon"></i>
+          </button>
+          <button class="copy-btn" id="copyApiKeyBtn" title="Salin API Key">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+      <% if (request.body) { %>
+        <div style="margin-top: 1.25rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">Request Body</label>
+          <pre style="background: #1a1a25; padding: 1rem; border-radius: 8px; overflow-x: auto; color: #00c9a7;"><%= JSON.stringify(JSON.parse(decodeURIComponent(request.body)), null, 2) %></pre>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Response -->
+    <div style="background: var(--card-bg); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
+      <h3 style="margin-bottom: 1rem; color: <%= response.status >= 200 && response.status < 300 ? '#00c9a7' : '#ff3b3b' %>;">
+        Response: <span style="font-weight: bold;"><%= response.status %> <%= response.statusText %></span>
+      </h3>
+      <pre id="responseBody" style="background: #1a1a25; padding: 1rem; border-radius: 8px; overflow-x: auto; color: #00c9a7;"><%= typeof response.body === 'string' ? response.body : JSON.stringify(response.body, null, 2) %></pre>
+    </div>
+
+    <!-- Code Examples -->
+    <div style="background: var(--card-bg); padding: 1.5rem; border-radius: 16px;">
+      <h3 style="margin-bottom: 1rem; color: var(--secondary);">
+        <i class="fas fa-code"></i> Code Examples
+      </h3>
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+        <button class="btn btn-primary" style="font-size: 0.85rem;" onclick="showCode('curl')">Curl</button>
+        <button class="btn" style="font-size: 0.85rem;" onclick="showCode('js')">JavaScript</button>
+        <button class="btn" style="font-size: 0.85rem;" onclick="showCode('php')">PHP</button>
+        <button class="btn" style="font-size: 0.85rem;" onclick="showCode('python')">Python</button>
+      </div>
+      <div class="snippet-container">
+        <pre id="codeSnippet" class="snippet-content"></pre>
+        <button class="snippet-copy" id="copySnippetBtn">Salin</button>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="/endpoints" class="btn btn-primary">
+        <i class="fas fa-arrow-left"></i> Kembali ke Endpoint
+      </a>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>
+
+<script>
+  // === API KEY VISIBILITY & COPY ===
+  const apiKeyInput = document.getElementById('apiKeyInput');
+  const toggleBtn = document.getElementById('toggleVisibility');
+  const copyApiKeyBtn = document.getElementById('copyApiKeyBtn');
+  const eyeIcon = document.getElementById('eyeIcon');
+
+  let isApiKeyVisible = false;
+  const originalApiKey = `<%= request.apikey %>` || '';
+
+  // Mask on load
+  apiKeyInput.value = originalApiKey.replace(/./g, '•');
+
+  toggleBtn.addEventListener('click', () => {
+    if (isApiKeyVisible) {
+      apiKeyInput.value = originalApiKey.replace(/./g, '•');
+      eyeIcon.className = 'fas fa-eye-slash';
+    } else {
+      apiKeyInput.value = originalApiKey;
+      eyeIcon.className = 'fas fa-eye';
+    }
+    isApiKeyVisible = !isApiKeyVisible;
+  });
+
+  copyApiKeyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(originalApiKey).then(() => {
+      copyApiKeyBtn.innerHTML = '<i class="fas fa-check"></i>';
+      setTimeout(() => {
+        copyApiKeyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+      }, 1500);
+    });
+  });
+
+  // === CODE SNIPPET GENERATION ===
+  const copySnippetBtn = document.getElementById('copySnippetBtn');
+
+  function copyText(text) {
+    navigator.clipboard.writeText(text);
+  }
+
+  function showCode(lang) {
+    const req = <%= JSON.stringify(request) %>;
+    const url = req.url.startsWith('http') ? req.url : 'https://api.example.com' + req.url;
+    const method = req.method;
+    const auth = req.apikey || '';
+    let body = null;
+    if (req.body) {
+      try { body = JSON.parse(decodeURIComponent(req.body)); } catch {}
+    }
+
+    // Placeholder auth for security
+    const displayAuth = auth ? (url.includes('paypal') ? 'YOUR_CLIENT_ID:YOUR_SECRET' : 'YOUR_API_KEY') : '';
+
+    let code = '';
+
+    if (lang === 'curl') {
+      let cmd = `curl -L '${url}' \\\n  -H 'Content-Type: application/json'`;
+      if (auth) {
+        if (url.includes('paypal')) {
+          cmd += ` \\\n  -H 'Authorization: Basic $(echo -n "${displayAuth}" | base64)'`;
+        } else {
+          cmd += ` \\\n  -H 'X-API-KEY: ${displayAuth}'`;
+        }
+      }
+      if (body && method !== 'GET') {
+        const bodyStr = JSON.stringify(body, null, 2).replace(/\n/g, '\\n  ');
+        cmd += ` \\\n  -d '${bodyStr}'`;
+      }
+      code = cmd;
+    } else if (lang === 'js') {
+      code = `fetch('${url}', {\n  method: '${method}',\n  headers: {\n    'Content-Type': 'application/json'${auth ? (url.includes('paypal') ? ",\n    'Authorization': 'Basic ' + btoa('${displayAuth}')'" : ",\n    'X-API-KEY': '${displayAuth}'") : ''}\n  }${body && method !== 'GET' ? ',\n  body: JSON.stringify(' + JSON.stringify(body, null, 2) + ')' : ''}\n})\n.then(res => res.json())\n.then(console.log);`;
+    } else if (lang === 'php') {
+      code = `$url = '${url}';\n$ch = curl_init($url);\ncurl_setopt($ch, CURLOPT_RETURNTRANSFER, true);\ncurl_setopt($ch, CURLOPT_HTTPHEADER, [\n    'Content-Type: application/json'${auth ? (url.includes('paypal') ? ",\n    'Authorization: Basic ' . base64_encode('${displayAuth}')" : ",\n    'X-API-KEY: ${displayAuth}'") : ''}\n]);${body && method !== 'GET' ? `\n\$postData = ${JSON.stringify(body, null, 2)};\ncurl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));` : ''}\n\$response = curl_exec($ch);\ncurl_close($ch);\n\$result = json_decode(\$response, true);\nprint_r(\$result);`;
+    } else if (lang === 'python') {
+      code = `import requests\nimport base64\n\nurl = '${url}'\nheaders = {\n    'Content-Type': 'application/json'`;
+      if (auth) {
+        if (url.includes('paypal')) {
+          code += `,\n    'Authorization': 'Basic ' + base64.b64encode(b'${displayAuth}').decode()`;
+        } else {
+          code += `,\n    'X-API-KEY': '${displayAuth}'`;
+        }
+      }
+      code += `\n}\nbody = ${body ? JSON.stringify(body, null, 2) : 'None'}\n\nresponse = requests.${method.toLowerCase()}(url, headers=headers, json=body)\nprint(response.json())`;
+    }
+
+    document.getElementById('codeSnippet').textContent = code;
+  }
+
+  // Tampilkan curl default
+  showCode('curl');
+
+  // Salin snippet
+  copySnippetBtn.addEventListener('click', () => {
+    const text = document.getElementById('codeSnippet').textContent;
+    copyText(text);
+    copySnippetBtn.textContent = 'Disalin!';
+    setTimeout(() => {
+      copySnippetBtn.textContent = 'Salin';
+    }, 1500);
+  });
+</script>

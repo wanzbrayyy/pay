@@ -1,0 +1,14 @@
+<%- include('partials/header') %>
+
+<section style="padding: 5rem 0; text-align: center;">
+  <h1 style="font-size: 5rem; color: var(--accent); margin-bottom: 1rem;">⚠️</h1>
+  <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Oops! Terjadi Kesalahan</h2>
+  <p style="font-size: 1.2rem; color: #aaa; margin-bottom: 2rem;">
+    <%= message || 'Halaman tidak dapat dimuat.' %>
+  </p>
+  <a href="/" class="btn btn-primary">
+    <i class="fas fa-home"></i> Kembali ke Beranda
+  </a>
+</section>
+
+<%- include('partials/footer') %>

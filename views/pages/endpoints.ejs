@@ -1,0 +1,181 @@
+<%- include('../partials/header') %>
+
+<section style="padding: 3rem 0;">
+  <h2 style="text-align: center; margin-bottom: 2.5rem; color: var(--secondary);">
+    <i class="fas fa-code"></i> Daftar Endpoint API
+  </h2>
+
+  <div style="max-width: 900px; margin: 0 auto;">
+
+    <!-- ===== PAKASIR ===== -->
+    <div id="pakasirContainer" style="display: none; margin-bottom: 3rem; background: var(--card-bg); padding: 1.75rem; border-radius: 16px;">
+      <h3 style="color: var(--accent); margin-bottom: 1.25rem;"><i class="fas fa-bolt"></i> Pakasir API</h3>
+      <p style="color: #aaa; margin-bottom: 1.5rem;">Payment gateway Indonesia: QRIS, VA, Retail.</p>
+      <%
+        const pakasirMethods = ['qris', 'bni_va', 'bri_va', 'retail'];
+        const defaultSlug = 'wanzofc';
+        const defaultApiKey = 'JQExjxZmW1s7ucJMbXxnQyNrdxWON3XL';
+        const sampleAmount = 100000;
+        const sampleOrderId = 'INV20251108-001';
+      %>
+      <% pakasirMethods.forEach(m => { %>
+        <div class="endpoint-card" style="margin-bottom: 1.25rem;">
+          <h4><i class="fas fa-<%= m.includes('va') ? 'building' : m === 'retail' ? 'store' : 'qrcode' %>"></i> <%= (m === 'qris' ? 'QRIS' : m === 'retail' ? 'Retail' : m.toUpperCase()) %></h4>
+          <code>POST https://app.pakasir.com/api/transactioncreate/<%= m %></code>
+          <button class="btn btn-primary" style="margin-top: 0.75rem;" onclick="openTry('pakasir', '<%= m %>')">
+            <i class="fas fa-play"></i> Try
+          </button>
+        </div>
+      <% }); %>
+    </div>
+
+    <!-- ===== PAYPAL ===== -->
+    <div id="paypalContainer" style="display: none; margin-bottom: 3rem; background: var(--card-bg); padding: 1.75rem; border-radius: 16px;">
+      <h3 style="color: #0070ba; margin-bottom: 1.25rem;"><i class="fab fa-paypal"></i> PayPal API (Production)</h3>
+      <p style="color: #aaa; margin-bottom: 1.5rem;">Integrasi PayPal Business untuk checkout, payout, dan notifikasi.</p>
+      <%
+        const paypalEndpoints = [
+          { name: 'Create Order (Checkout)', path: '/v2/checkout/orders', method: 'POST' },
+          { name: 'Capture Payment', path: '/v2/checkout/orders/{order_id}/capture', method: 'POST' },
+          { name: 'Get Order Details', path: '/v2/checkout/orders/{order_id}', method: 'GET' },
+          { name: 'Create Payout', path: '/v1/payments/payouts', method: 'POST' },
+          { name: 'Get Payout Details', path: '/v1/payments/payouts/{payout_id}', method: 'GET' },
+          { name: 'Refund Payment', path: '/v2/payments/captures/{capture_id}/refund', method: 'POST' },
+          { name: 'Verify Webhook Signature', path: '/v1/notifications/verify-webhook-signature', method: 'POST' },
+          { name: 'List Transactions', path: '/v1/reporting/transactions', method: 'GET' }
+        ];
+        const defaultPayPalClientId = 'Ae8uO3kL...'; // contoh production
+        const defaultPayPalSecret = 'EJ9pK2mN...';
+      %>
+      <% paypalEndpoints.forEach(ep => { %>
+        <div class="endpoint-card" style="margin-bottom: 1.25rem;">
+          <h4><i class="fab fa-paypal"></i> <%= ep.name %></h4>
+          <code><%= ep.method %> https://api.paypal.com<%= ep.path %></code>
+          <button class="btn btn-primary" style="margin-top: 0.75rem;" onclick="openTry('paypal', '<%= ep.path %>', '<%= ep.method %>')">
+            <i class="fas fa-play"></i> Try
+          </button>
+        </div>
+      <% }); %>
+    </div>
+
+    <!-- Toggle Buttons -->
+    <div style="text-align: center; margin: 2.5rem 0; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+      <button class="btn btn-accent" onclick="toggleSection('pakasir')">
+        <i class="fas fa-bolt"></i> API Pakasir
+      </button>
+      <button class="btn" style="background: #0070ba; color: white;" onclick="toggleSection('paypal')">
+        <i class="fab fa-paypal"></i> PayPal API
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<!-- Modal Umum -->
+<div id="tryModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center;">
+  <div style="background: var(--card-bg); padding: 2rem; border-radius: 20px; max-width: 520px; width: 90%;">
+    <h3 id="modalTitle" style="margin-bottom: 1.25rem;">Coba API</h3>
+    <div id="modalFields"></div>
+    <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+      <button class="btn btn-primary" onclick="executeTry()" style="flex:1;">Jalankan</button>
+      <button class="btn" style="background: #333;" onclick="closeModal()">Batal</button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+
+<script>
+  let currentTry = null;
+
+  function toggleSection(section) {
+    document.getElementById('pakasirContainer').style.display = section === 'pakasir' && document.getElementById('pakasirContainer').style.display === 'none' ? 'block' : 'none';
+    document.getElementById('paypalContainer').style.display = section === 'paypal' && document.getElementById('paypalContainer').style.display === 'none' ? 'block' : 'none';
+  }
+
+  function openTry(type, path, method = 'POST') {
+    currentTry = { type, path, method };
+    document.getElementById('modalTitle').innerText = `Coba ${type === 'pakasir' ? 'Pakasir' : 'PayPal'} API`;
+
+    let html = '';
+    if (type === 'pakasir') {
+      html = `
+        <input type="hidden" id="inputType" value="pakasir">
+        <input type="hidden" id="inputPath" value="${path}">
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display:block; margin-bottom:0.5rem; color:#aaa;">Project Slug</label>
+          <input type="text" id="inputSlug" class="modal-input" value="wanzofc-project" style="width:100%; padding:12px; border-radius:10px; background:#2a2a3a; color:white; border:1px solid #333;">
+        </div>
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display:block; margin-bottom:0.5rem; color:#aaa;">API Key</label>
+          <input type="text" id="inputApiKey" class="modal-input" value="sk_live_wanzofc_2025_prod" style="width:100%; padding:12px; border-radius:10px; background:#2a2a3a; color:#00c9a7; border:1px solid #333; font-family:monospace;">
+        </div>
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display:block; margin-bottom:0.5rem; color:#aaa;">Nominal</label>
+          <input type="number" id="inputAmount" class="modal-input" value="100000" style="width:100%; padding:12px; border-radius:10px; background:#2a2a3a; color:white; border:1px solid #333;">
+        </div>
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display:block; margin-bottom:0.5rem; color:#aaa;">Order ID</label>
+          <input type="text" id="inputOrderId" class="modal-input" value="INV20251108-001" style="width:100%; padding:12px; border-radius:10px; background:#2a2a3a; color:white; border:1px solid #333;">
+        </div>
+      `;
+    } else {
+      html = `
+        <input type="hidden" id="inputType" value="paypal">
+        <input type="hidden" id="inputPath" value="${path}">
+        <input type="hidden" id="inputMethod" value="${method}">
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display:block; margin-bottom:0.5rem; color:#aaa;">Client ID (Production)</label>
+          <input type="text" id="inputClientId" class="modal-input" value="Ae8uO3kL..." style="width:100%; padding:12px; border-radius:10px; background:#2a2a3a; color:white; border:1px solid #333; font-family:monospace;">
+        </div>
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display:block; margin-bottom:0.5rem; color:#aaa;">Secret</label>
+          <input type="text" id="inputSecret" class="modal-input" value="EJ9pK2mN..." style="width:100%; padding:12px; border-radius:10px; background:#2a2a3a; color:#ff2d75; border:1px solid #333; font-family:monospace;">
+        </div>
+       <div style="margin-bottom: 1.25rem;">
+  <label style="display:block; margin-bottom:0.5rem; color:#aaa;">Body (JSON, wajib lengkap)</label>
+  <textarea id="inputBody" class="modal-input" style="width:100%; padding:12px; border-radius:10px; background:#2a2a3a; color:white; border:1px solid #333; height:140px; font-family:monospace;">{
+  "intent": "CAPTURE",
+  "purchase_units": [
+    {
+      "amount": {
+        "currency_code": "USD",
+        "value": "100.00"
+      }
+    }
+  ]
+}</textarea>
+</div>
+      `;
+    }
+    document.getElementById('modalFields').innerHTML = html;
+    document.getElementById('tryModal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('tryModal').style.display = 'none';
+  }
+
+  function executeTry() {
+    const type = document.getElementById('inputType').value;
+    if (type === 'pakasir') {
+      const slug = document.getElementById('inputSlug').value;
+      const apiKey = document.getElementById('inputApiKey').value;
+      const amount = document.getElementById('inputAmount').value;
+      const orderId = document.getElementById('inputOrderId').value;
+      const method = currentTry.path;
+      const url = `/api/transactioncreate/${method}`;
+      const body = JSON.stringify({ project: slug, order_id: orderId, amount: parseInt(amount), api_key: apiKey });
+      window.location = `/result?url=${encodeURIComponent(url)}&method=POST&apikey=${encodeURIComponent(apiKey)}&body=${encodeURIComponent(body)}`;
+    } else {
+      const clientId = document.getElementById('inputClientId').value;
+      const secret = document.getElementById('inputSecret').value;
+      const bodyStr = document.getElementById('inputBody').value || '{}';
+      const path = document.getElementById('inputPath').value;
+      const method = document.getElementById('inputMethod').value;
+      const url = `https://api.paypal.com${path}`;
+      // Untuk PayPal, apikey = client_id:secret (base64) — tapi di sini kita kirim sebagai header via proxy
+      window.location = `/result?url=${encodeURIComponent(url)}&method=${method}&apikey=${encodeURIComponent(clientId + ':' + secret)}&body=${encodeURIComponent(bodyStr)}`;
+    }
+  }
+</script>

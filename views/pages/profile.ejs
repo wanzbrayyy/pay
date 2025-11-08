@@ -1,0 +1,37 @@
+<%- include('../partials/header') %>
+
+<section style="padding: 3rem 0;">
+  <h2 style="text-align: center; margin-bottom: 2rem; color: var(--secondary);">
+    <i class="fas fa-user-circle"></i> Profil Saya
+  </h2>
+
+  <div style="max-width: 600px; margin: 0 auto;">
+    <div style="background: var(--card-bg); padding: 2rem; border-radius: 20px; text-align: center; margin-bottom: 2rem;">
+      <div style="width: 80px; height: 80px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem; color: white;">
+        <i class="fas fa-user"></i>
+      </div>
+      <h3 style="margin-bottom: 0.25rem; font-size: 1.5rem;"><%= user.name %></h3>
+      <p style="color: #aaa; font-size: 0.95rem;"><%= user.email %></p>
+    </div>
+
+    <div style="background: var(--card-bg); padding: 1.75rem; border-radius: 16px;">
+      <label style="display: block; margin-bottom: 0.75rem; color: #aaa; font-size: 1rem;">
+        API Key (Gunakan di Header: <code>X-API-KEY</code>)
+      </label>
+      <div style="display: flex; gap: 0.75rem;">
+        <input
+          type="text"
+          id="profile-apikey"
+          value="<%= user.apiKey %>"
+          readonly
+          style="flex: 1; padding: 14px; border-radius: 12px; background: #2a2a3a; color: var(--success); border: 1px solid #333; font-family: monospace; font-size: 1rem;"
+        />
+        <button class="btn btn-accent" onclick="copyFromInput('profile-apikey')" style="padding: 14px 18px; height: auto;">
+          <i class="fas fa-copy"></i> Salin
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,39 @@
+  </div>
+  <nav class="bottom-nav">
+    <a href="/dash"><i class="fas fa-home"></i></a>
+    <a href="/endpoints"><i class="fas fa-code"></i></a>
+    <a class="profile-btn"><i class="fas fa-user"></i></a>
+  </nav>
+  <div class="profile-dropdown">
+    <a href="/profile"><i class="fas fa-user-circle"></i> Profil Saya</a>
+    <a href="/logout"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+  </div>
+
+  <script>
+    function copyFromInputValue(value) {
+      navigator.clipboard.writeText(value).then(() => {
+        const btn = event.target;
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => btn.innerHTML = orig, 1500);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const profileBtn = document.querySelector('.profile-btn');
+      const dropdown = document.querySelector('.profile-dropdown');
+      if (profileBtn && dropdown) {
+        profileBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          dropdown.classList.toggle('show');
+        });
+        document.addEventListener('click', e => {
+          if (!dropdown.contains(e.target) && e.target !== profileBtn) {
+            dropdown.classList.remove('show');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
