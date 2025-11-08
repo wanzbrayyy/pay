@@ -22,17 +22,17 @@ app.use(express.json());
 
 const store = new MongoStore({ uri: process.env.MONGODB_URI, collection: 'sessions' });
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'wanzofc-secret-key',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store,
+  store: store,
   cookie: {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production'
+    secure: process.env.NODE_ENV === 'production' && process.env.VERCEL ? true : false,
+    sameSite: 'lax'
   }
 }));
-
 // Tambahkan middleware ini DI AWAL app.js (setelah session, sebelum rute)
 app.use((req, res, next) => {
   if (req.hostname === 'dash.wanzofc.site' && req.path === '/') {
