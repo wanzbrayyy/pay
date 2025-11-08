@@ -9,7 +9,7 @@ const https = require('https');
 const mainRoutes = require('./routes/main');
 const authRoutes = require('./routes/auth');
 const authMiddleware = require('./middleware/authMiddleware');
-const User = require('./models/user');
+const User = require('./models/User');
 
 // Koneksi MongoDB
 mongoose.connect(process.env.MONGODB_URI).catch(err => {
@@ -22,8 +22,10 @@ const requestLog = [];
 
 // === HTTPS REDIRECT (WAJIB UNTUK VERCEL) ===
 app.use((req, res, next) => {
-  if (req.headers['x-forwarded-proto'] !== 'https' && process.env.NODE_ENV === 'production') {
-    return res.redirect(`https://${req.hostname}${req.originalUrl}`);
+  if (process.env.NODE_ENV === 'production') {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+      return res.redirect(`https://${req.hostname}${req.originalUrl}`);
+    }
   }
   next();
 });
@@ -35,7 +37,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Session dengan MongoDB Store
+// Session dengan MongoDB
 const store = new MongoStore({
   uri: process.env.MONGODB_URI,
   collection: 'sessions'
@@ -47,7 +49,7 @@ app.use(session({
   saveUninitialized: false,
   store: store,
   cookie: {
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
+    maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax'
@@ -182,7 +184,7 @@ app.get('/result', authMiddleware, async (req, res) => {
   res.render('pages/result', { request: requestData, response: responseData });
 });
 
-// Dashboard — redirect khusus untuk dash.wanzofc.site
+// Redirect root dash.wanzofc.site ke /dash
 app.use((req, res, next) => {
   if (req.hostname === 'dash.wanzofc.site' && req.path === '/') {
     return res.redirect('/dash');
@@ -190,6 +192,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Dashboard
 app.get('/dash', authMiddleware, (req, res) => {
   const stats = { totalRequests: requestLog.length };
   res.render('pages/dashboard', { stats });
@@ -200,8 +203,8 @@ app.use((req, res) => {
   res.status(404).render('error', { message: 'Halaman tidak ditemukan.' });
 });
 
-// Hanya jalankan di development (Termux)
-if (process.env.NODE_ENV !== 'production') {
+// Jalankan di Termux
+if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Wanzofc API berjalan di http://localhost:${PORT}`);
