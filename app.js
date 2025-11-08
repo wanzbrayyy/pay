@@ -9,7 +9,7 @@ const https = require('https');
 const mainRoutes = require('./routes/main');
 const authRoutes = require('./routes/auth');
 const authMiddleware = require('./middleware/authMiddleware');
-const User = require('./models/User');
+const User = require('./models/user');
 
 // Koneksi MongoDB
 mongoose.connect(process.env.MONGODB_URI).catch(err => {
