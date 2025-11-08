@@ -33,13 +33,6 @@ app.use(session({
   }
 }));
 
-// Tambahkan middleware ini DI AWAL app.js (setelah session, sebelum rute)
-app.use((req, res, next) => {
-  if (req.hostname === 'dash.wanzofc.site' && req.path === '/') {
-    return res.redirect('/dash');
-  }
-  next();
-});
 
 app.use((req, res, next) => {
   const fullUrl = `${req.protocol}://${req.hostname}${req.originalUrl}`;

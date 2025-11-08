@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "builds": [{ "src": "app.js", "use": "@vercel/node" }],
-  "routes": [
+  "builds": [
     {
-      "src": "/",
-      "has": [{ "type": "host", "value": "dash.wanzofc.site" }],
-      "dest": "/dash"
-    },
+      "src": "app.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
     {
       "src": "/(.*)",
       "dest": "app.js"
