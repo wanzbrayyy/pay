@@ -4,43 +4,57 @@ const session = require('express-session');
 const MongoStore = require('connect-mongodb-session')(session);
 const path = require('path');
 const mongoose = require('mongoose');
-const https = require('https'); 
+const https = require('https');
+
 const mainRoutes = require('./routes/main');
 const authRoutes = require('./routes/auth');
 const authMiddleware = require('./middleware/authMiddleware');
 const User = require('./models/user');
-mongoose.connect(process.env.MONGODB_URI).catch(err => console.error('MongoDB error:', err));
+
+// Koneksi MongoDB
+mongoose.connect(process.env.MONGODB_URI).catch(err => {
+  console.error('❌ Gagal koneksi MongoDB:', err.message);
+  process.exit(1);
+});
 
 const app = express();
 const requestLog = [];
 
+// === HTTPS REDIRECT (WAJIB UNTUK VERCEL) ===
+app.use((req, res, next) => {
+  if (req.headers['x-forwarded-proto'] !== 'https' && process.env.NODE_ENV === 'production') {
+    return res.redirect(`https://${req.hostname}${req.originalUrl}`);
+  }
+  next();
+});
+
+// Template Engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const store = new MongoStore({ uri: process.env.MONGODB_URI, collection: 'sessions' });
+// Session dengan MongoDB Store
+const store = new MongoStore({
+  uri: process.env.MONGODB_URI,
+  collection: 'sessions'
+});
+
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: store,
   cookie: {
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production' && process.env.VERCEL ? true : false,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax'
   }
 }));
-// Tambahkan middleware ini DI AWAL app.js (setelah session, sebelum rute)
-app.use((req, res, next) => {
-  if (req.hostname === 'dash.wanzofc.site' && req.path === '/') {
-    return res.redirect('/dash');
-  }
-  next();
-});
 
+// Logger & Live Traffic
 app.use((req, res, next) => {
   const fullUrl = `${req.protocol}://${req.hostname}${req.originalUrl}`;
   console.log(`[${new Date().toISOString()}] ${req.method} ${fullUrl}`);
@@ -49,21 +63,28 @@ app.use((req, res, next) => {
   next();
 });
 
+// Routes
 app.use('/', mainRoutes);
 app.use('/', authRoutes);
+
+// Profile
 app.get('/profile', authMiddleware, async (req, res) => {
   const user = await User.findById(req.session.userId).select('name email apiKey');
   if (!user) return res.redirect('/logout');
   res.render('pages/profile', { user });
 });
 
+// Endpoints Docs
 app.get('/endpoints', (req, res) => {
   res.render('pages/endpoints');
 });
+
+// Live Traffic API
 app.get('/api/live-traffic', authMiddleware, (req, res) => {
   res.json({ logs: requestLog });
 });
 
+// === /result: Eksekusi API ke Pakasir atau PayPal ===
 app.get('/result', authMiddleware, async (req, res) => {
   const { url, method, apikey, body: bodyStr } = req.query;
   if (!url || !method) {
@@ -105,6 +126,7 @@ app.get('/result', authMiddleware, async (req, res) => {
         'User-Agent': 'Wanzofc-API-Client/1.0'
       }
     };
+
     if (apikey) {
       if (url.includes('paypal.com')) {
         const b64 = Buffer.from(apikey).toString('base64');
@@ -117,23 +139,23 @@ app.get('/result', authMiddleware, async (req, res) => {
     if (requestBody && isPost) {
       options.headers['Content-Length'] = Buffer.byteLength(requestBody);
     }
+
     const apiResponse = await new Promise((resolve, reject) => {
-      const req = https.request(options, (resPakasir) => {
+      const reqPay = https.request(options, (resPay) => {
         let data = '';
-        resPakasir.on('data', (chunk) => data += chunk);
-        resPakasir.on('end', () => {
+        resPay.on('data', (chunk) => data += chunk);
+        resPay.on('end', () => {
           resolve({
-            statusCode: resPakasir.statusCode,
-            statusMessage: resPakasir.statusMessage || 'OK',
-            headers: resPakasir.headers,
+            statusCode: resPay.statusCode,
+            statusMessage: resPay.statusMessage || 'OK',
+            headers: resPay.headers,
             body: data
           });
         });
       });
-
-      req.on('error', reject);
-      if (requestBody && isPost) req.write(requestBody);
-      req.end();
+      reqPay.on('error', reject);
+      if (requestBody && isPost) reqPay.write(requestBody);
+      reqPay.end();
     });
 
     let parsedBody = apiResponse.body;
@@ -142,6 +164,7 @@ app.get('/result', authMiddleware, async (req, res) => {
       try {
         parsedBody = JSON.parse(apiResponse.body);
       } catch (e) {
+        // Biarkan sebagai string jika gagal parse
       }
     }
 
@@ -158,17 +181,32 @@ app.get('/result', authMiddleware, async (req, res) => {
 
   res.render('pages/result', { request: requestData, response: responseData });
 });
+
+// Dashboard — redirect khusus untuk dash.wanzofc.site
+app.use((req, res, next) => {
+  if (req.hostname === 'dash.wanzofc.site' && req.path === '/') {
+    return res.redirect('/dash');
+  }
+  next();
+});
+
 app.get('/dash', authMiddleware, (req, res) => {
   const stats = { totalRequests: requestLog.length };
   res.render('pages/dashboard', { stats });
 });
+
+// 404
 app.use((req, res) => {
   res.status(404).render('error', { message: 'Halaman tidak ditemukan.' });
 });
+
+// Hanya jalankan di development (Termux)
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Wanzofc API berjalan di http://localhost:${PORT}`);
   });
 }
+
+// Ekspor untuk Vercel
 module.exports = app;
