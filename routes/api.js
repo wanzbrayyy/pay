@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const { ensureAuthenticated, ensureAccountActive } = require('../middleware/authMiddleware');
+const { ensureAuthenticated, ensureAccountActive } = require( '../middleware/authMiddleware');
 const config = require('../config');
+
 router.all('/v1/*', ensureAuthenticated, ensureAccountActive, async (req, res) => {
     const endpoint = req.params[0];
     const targetUrl = `${config.rdash.apiUrl}/${endpoint}`;
@@ -11,9 +12,7 @@ router.all('/v1/*', ensureAuthenticated, ensureAccountActive, async (req, res) =
     if (!rdash_reseller_id || !rdash_api_key) {
         return res.status(403).json({ message: 'RDASH Reseller ID and API Key are not set in your profile.' });
     }
-
     const authHeader = 'Basic ' + Buffer.from(`${rdash_reseller_id}:${rdash_api_key}`).toString('base64');
-
     try {
         const response = await axios({
             method: req.method,

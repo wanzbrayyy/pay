@@ -8,21 +8,12 @@
   "host": "wanzofc.site",
   "basePath": "/v1",
   "schemes": [
-    "http"
+    "https"
   ],
   "tags": [
-    {
-      "name": "accounts",
-      "description": "Manage your account informations"
-    },
-    {
-      "name": "domains",
-      "description": "Register and manage all your domains"
-    },
-    {
-      "name": "ssl",
-      "description": "Create and manage SSL"
-    }
+    { "name": "accounts", "description": "Manage your account informations" },
+    { "name": "domains", "description": "Register and manage all your domains" },
+    { "name": "ssl", "description": "Create and manage SSL" }
   ],
   "paths": {
     "/account/prices": {
@@ -30,25 +21,11 @@
         "tags": [ "accounts" ],
         "summary": "List All Product Prices",
         "parameters": [
-          {
-            "name": "promo",
-            "in": "query",
-            "type": "boolean"
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "type": "integer"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "integer"
-          }
+          { "name": "promo", "in": "query", "type": "boolean" },
+          { "name": "page", "in": "query", "type": "integer" },
+          { "name": "limit", "in": "query", "type": "integer" }
         ],
-        "responses": {
-          "200": { "description": "Success" }
-        }
+        "responses": { "200": { "description": "Success" } }
       }
     },
     "/domains/availability": {
@@ -56,22 +33,10 @@
         "tags": [ "domains" ],
         "summary": "Check Domain Availability",
         "parameters": [
-          {
-            "name": "domain",
-            "in": "query",
-            "type": "string",
-            "required": true,
-            "description": "Domain name to check, e.g., wanzofc.com"
-          },
-          {
-            "name": "include_premium_domains",
-            "in": "query",
-            "type": "boolean"
-          }
+          { "name": "domain", "in": "query", "type": "string", "required": true, "description": "Domain name to check, e.g., wanzofc.com" },
+          { "name": "include_premium_domains", "in": "query", "type": "boolean" }
         ],
-        "responses": {
-          "200": { "description": "Success" }
-        }
+        "responses": { "200": { "description": "Success" } }
       }
     },
     "/ssl/prices": {
@@ -79,26 +44,11 @@
         "tags": [ "ssl" ],
         "summary": "List All SSL Products with Prices",
         "parameters": [
-           {
-            "name": "name",
-            "in": "query",
-            "type": "string",
-            "description": "Filter by SSL product name"
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "type": "integer"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "integer"
-          }
+           { "name": "name", "in": "query", "type": "string", "description": "Filter by SSL product name" },
+           { "name": "page", "in": "query", "type": "integer" },
+           { "name": "limit", "in": "query", "type": "integer" }
         ],
-        "responses": {
-          "200": { "description": "Success" }
-        }
+        "responses": { "200": { "description": "Success" } }
       }
     }
   }

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const path = require('path');
+const cors = require('cors');
 const config = require('./config');
 const User = require('./models/user');
 
@@ -13,6 +14,7 @@ mongoose.connect(config.db.uri)
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.log(err));
 
+app.use(cors());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
