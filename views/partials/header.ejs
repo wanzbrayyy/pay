@@ -1,11 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>wanzofc api</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wanzofc.api - <%- title %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <div class="container">
+    <header class="main-header">
+        <div class="logo-container">
+            <a href="/"><img src="/images/logo.png" alt="wanzofc.api Logo" class="logo"></a>
+        </div>
+        <nav class="main-nav">
+            <a href="/endpoints">Endpoints</a>
+            <a href="/getting-started">Getting Started</a>
+            <% if (isAuthenticated) { %>
+                <a href="/dashboard">Dashboard</a>
+                <form action="/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="nav-logout-btn">Logout</button>
+                </form>
+            <% } else { %>
+                <a href="/login" class="nav-login-btn">Login</a>
+            <% } %>
+        </nav>
+        <div id="api-status-indicator"></div>
+    </header>
+    <main class="container">

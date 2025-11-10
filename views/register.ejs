@@ -1,0 +1,30 @@
+<%- include('partials/header') %>
+
+<div class="auth-container">
+    <h2>Create Your Account</h2>
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+        <div class="error-messages">
+            <% errors.forEach(function(error) { %>
+                <p><%= error.msg %></p>
+            <% }); %>
+        </div>
+    <% } %>
+    <form action="/register" method="POST">
+        <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" value="<%= typeof name != 'undefined' ? name : '' %>" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" value="<%= typeof email != 'undefined' ? email : '' %>" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn-primary">Register</button>
+    </form>
+    <p>Already have an account? <a href="/login">Login</a></p>
+</div>
+
+<%- include('partials/footer') %>

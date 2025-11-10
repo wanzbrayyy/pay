@@ -1,0 +1,16 @@
+<%- include('partials/header') %>
+<div class="auth-container">
+    <h2>Deposit Saldo</h2>
+    <p style="margin-bottom: 20px;">Saldo Anda saat ini: <strong style="color: var(--primary-color);">Rp <%= user.balance.toLocaleString('id-ID') %></strong></p>
+    <% if (typeof error !== 'undefined') { %>
+        <p style="color: var(--error-color); margin-bottom: 15px;"><%= error %></p>
+    <% } %>
+    <form action="/deposit" method="POST">
+        <div class="form-group">
+            <label for="amount">Jumlah Deposit (Minimum Rp 300.000)</label>
+            <input type="number" id="amount" name="amount" min="300000" placeholder="Contoh: 500000" required>
+        </div>
+        <button type="submit" class="btn-primary">Lanjutkan ke Pembayaran</button>
+    </form>
+</div>
+<%- include('partials/footer') %>

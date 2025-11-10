@@ -1,0 +1,25 @@
+<%- include('partials/header') %>
+<div class="getting-started">
+    <h1>Welcome to Digitalhostt Reseller</h1>
+    <p>Integrasikan API domain reseller ke dalam aplikasi Anda dengan mudah.</p>
+    <div class="pricing-box">
+        <h2>Aktivasi Akun</h2>
+        <p class="price">Rp 100.000</p>
+        <p>Sekali bayar untuk selamanya</p>
+        <ul>
+            <li><i class="fas fa-check"></i> Akses penuh ke semua endpoint</li>
+            <li><i class="fas fa-check"></i> Generator Cuplikan Kode</li>
+            <li><i class="fas fa-check"></i> Dukungan Komunitas</li>
+        </ul>
+        <% if (isAuthenticated) { %>
+            <% if (user.paymentStatus === 'pending') { %>
+                <a href="/checkout" class="btn-primary">Lanjutkan Pembayaran</a>
+            <% } else { %>
+                <a href="/dashboard" class="btn-primary">Go to Dashboard</a>
+            <% } %>
+        <% } else { %>
+            <a href="/register" class="btn-primary">Daftar & Bayar Sekarang</a>
+        <% } %>
+    </div>
+</div>
+<%- include('partials/footer') %>

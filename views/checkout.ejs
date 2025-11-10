@@ -1,0 +1,19 @@
+<%- include('partials/header') %>
+
+<div class="checkout-container">
+    <div class="pricing-box">
+        <h2>Account Activation</h2>
+        <p>Complete your registration by activating your account.</p>
+        <p class="price">Rp <%= new Intl.NumberFormat('id-ID').format(amount) %></p>
+        <p>One-time payment for lifetime access.</p>
+        <br>
+        <a href="<%= paymentUrl %>" class="btn-primary">
+            <i class="fas fa-qrcode"></i> Pay with QRIS Now
+        </a>
+        <p style="margin-top: 20px; font-size: 0.9em; color: var(--text-muted);">
+            You will be redirected to the payment page. After successful payment, your account will be activated automatically.
+        </p>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

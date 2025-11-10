@@ -1,0 +1,105 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "wanzofc.api",
+    "description": "Local proxy tester for Domain Reseller API. Authentication is handled by the server.",
+    "version": "1.5.0"
+  },
+  "host": "wanzofc.site",
+  "basePath": "/v1",
+  "schemes": [
+    "http"
+  ],
+  "tags": [
+    {
+      "name": "accounts",
+      "description": "Manage your account informations"
+    },
+    {
+      "name": "domains",
+      "description": "Register and manage all your domains"
+    },
+    {
+      "name": "ssl",
+      "description": "Create and manage SSL"
+    }
+  ],
+  "paths": {
+    "/account/prices": {
+      "get": {
+        "tags": [ "accounts" ],
+        "summary": "List All Product Prices",
+        "parameters": [
+          {
+            "name": "promo",
+            "in": "query",
+            "type": "boolean"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      }
+    },
+    "/domains/availability": {
+      "get": {
+        "tags": [ "domains" ],
+        "summary": "Check Domain Availability",
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "Domain name to check, e.g., wanzofc.com"
+          },
+          {
+            "name": "include_premium_domains",
+            "in": "query",
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      }
+    },
+    "/ssl/prices": {
+      "get": {
+        "tags": [ "ssl" ],
+        "summary": "List All SSL Products with Prices",
+        "parameters": [
+           {
+            "name": "name",
+            "in": "query",
+            "type": "string",
+            "description": "Filter by SSL product name"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      }
+    }
+  }
+}

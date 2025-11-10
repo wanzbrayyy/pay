@@ -1,13 +1,20 @@
-
-const authMiddleware = (req, res, next) => {
-  if (!req.session.userId) {
-    const host = req.headers.host || '';
-    if (host.startsWith('dash.')) {
-      return res.redirect('https://wanzofc.site/login');
+module.exports = {
+    ensureAuthenticated: (req, res, next) => {
+        if (req.session.userId) {
+            return next();
+        }
+        res.redirect('/login');
+    },
+    forwardAuthenticated: (req, res, next) => {
+        if (!req.session.userId) {
+            return next();
+        }
+        res.redirect('/dashboard');
+    },
+    ensureAccountActive: (req, res, next) => {
+        if (req.user && req.user.paymentStatus === 'completed') {
+            return next();
+        }
+        res.redirect('/checkout');
     }
-    return res.redirect('/login');
-  }
-  next();
 };
-
-module.exports = authMiddleware;

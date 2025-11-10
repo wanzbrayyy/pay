@@ -1,0 +1,48 @@
+<%- include('partials/header') %>
+<div class="dashboard">
+    <div class="dashboard-grid">
+        <div class="profile-card">
+            <div class="avatar">
+                <% const nameParts = user.name.split(' '); %>
+                <%= nameParts[0].charAt(0).toUpperCase() %><%= nameParts.length > 1 ? nameParts[1].charAt(0).toUpperCase() : '' %>
+            </div>
+            <h3><%= user.name %></h3>
+            <p><%= user.email %></p>
+            <span class="status-active">Akun Aktif</span>
+        </div>
+
+        <div class="balance-card">
+            <h4>Saldo Anda</h4>
+            <p class="balance-amount">Rp <%= user.balance.toLocaleString('id-ID') %></p>
+            <a href="/deposit" class="btn-deposit">
+                <i class="fas fa-plus-circle"></i> Deposit Saldo
+            </a>
+        </div>
+
+        <div class="api-key-section full-width">
+            <h3>API Credentials Anda</h3>
+            <p>Gunakan kredensial ini untuk otentikasi permintaan Anda melalui API proxy kami.</p>
+            
+            <div class="form-group">
+                <label for="rdash_reseller_id">Your Reseller ID</label>
+                <div class="input-with-button">
+                    <input type="text" id="rdash_reseller_id" value="<%= user.rdash_reseller_id %>" readonly>
+                    <button type="button" class="btn-copy" data-copy-target="#rdash_reseller_id"><i class="fas fa-copy"></i></button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="rdash_api_key">Your API Key</label>
+                <div class="input-with-button">
+                    <input type="text" id="rdash_api_key" value="<%= user.rdash_api_key %>" readonly>
+                    <button type="button" class="btn-copy" data-copy-target="#rdash_api_key"><i class="fas fa-copy"></i></button>
+                </div>
+            </div>
+
+            <div class="dashboard-actions">
+                <a href="/endpoints" class="btn-secondary"><i class="fas fa-book-open"></i> Lihat Dokumentasi API</a>
+            </div>
+        </div>
+    </div>
+</div>
+<%- include('partials/footer') %>
